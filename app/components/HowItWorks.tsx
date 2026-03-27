@@ -1,4 +1,5 @@
 "use client";
+
 export default function HowItWorks() {
   const steps = [
     {
@@ -22,102 +23,55 @@ export default function HowItWorks() {
   ];
 
   return (
-    <section id="how-it-works" style={{ padding: "80px 24px", position: "relative", zIndex: 1 }}>
+    <section
+      id="how-it-works"
+      className="relative z-10 px-4 py-20 "
+    >
       {/* Background accent */}
-      <div style={{
-        position: "absolute", top: "50%", left: "50%",
-        transform: "translate(-50%, -50%)",
-        width: "600px", height: "300px",
-        background: "radial-gradient(ellipse, rgba(108,99,255,0.07) 0%, transparent 70%)",
-        pointerEvents: "none",
-      }} />
+      <div className="absolute top-1/2 left-1/2 w-[600px] h-[300px] -translate-x-1/2 -translate-y-1/2 bg-[radial-gradient(ellipse,rgba(108,99,255,0.07)_0%,transparent_70%)] pointer-events-none" />
 
-      <div style={{ maxWidth: "1100px", margin: "0 auto" }}>
-        <div style={{ textAlign: "center", marginBottom: "64px" }}>
-          <div className="badge" style={{ marginBottom: "16px" }}>
+      <div className="w-full mx-auto">
+
+        {/* Header */}
+        <div className="text-center mb-16">
+          <div className="badge mb-4 inline-flex">
             <span>🔄</span> Simple Process
           </div>
-          <h2 style={{
-            fontFamily: "'Space Grotesk', sans-serif",
-            fontSize: "clamp(28px, 5vw, 44px)",
-            fontWeight: 700,
-            color: "var(--text-primary)",
-          }}>
+
+          <h2 className="font-[Space_Grotesk] text-[clamp(28px,5vw,44px)] font-bold text-[var(--text-primary)]">
             Three steps to perfection
           </h2>
         </div>
 
-        <div style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
-          gap: "24px",
-          position: "relative",
-        }}>
+        {/* Grid */}
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 relative">
           {steps.map((step, i) => (
             <div
               key={i}
-              style={{
-                background: "rgba(26,26,40,0.6)",
-                border: "1px solid var(--border)",
-                borderRadius: "20px",
-                padding: "36px 28px",
-                position: "relative",
-                overflow: "hidden",
-                transition: "all 0.3s ease",
-              }}
-              onMouseEnter={(e) => {
-                (e.currentTarget as HTMLElement).style.borderColor = "rgba(108,99,255,0.5)";
-                (e.currentTarget as HTMLElement).style.transform = "translateY(-4px)";
-              }}
-              onMouseLeave={(e) => {
-                (e.currentTarget as HTMLElement).style.borderColor = "var(--border)";
-                (e.currentTarget as HTMLElement).style.transform = "none";
-              }}
+              className="relative overflow-hidden rounded-2xl border border-[var(--border)] bg-[rgba(26,26,40,0.6)] p-7 sm:p-8 transition-all duration-300 hover:-translate-y-1 hover:border-[rgba(108,99,255,0.5)]"
             >
-              {/* Step number watermark */}
-              <div style={{
-                position: "absolute", top: "-10px", right: "20px",
-                fontFamily: "'Space Grotesk', sans-serif",
-                fontSize: "80px",
-                fontWeight: 700,
-                color: "rgba(108,99,255,0.06)",
-                lineHeight: 1,
-                pointerEvents: "none",
-                userSelect: "none",
-              }}>
+              {/* Watermark number */}
+              <div className="absolute -top-2 right-5 font-[Space_Grotesk] text-[80px] font-bold text-[rgba(108,99,255,0.06)] leading-none select-none pointer-events-none">
                 {step.num}
               </div>
 
-              <div style={{
-                width: "56px", height: "56px",
-                background: "linear-gradient(135deg, rgba(108,99,255,0.2), rgba(0,212,170,0.1))",
-                border: "1px solid rgba(108,99,255,0.3)",
-                borderRadius: "16px",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                fontSize: "26px",
-                marginBottom: "20px",
-              }}>
+              {/* Icon */}
+              <div className="w-14 h-14 rounded-xl flex items-center justify-center text-2xl mb-5 border border-[rgba(108,99,255,0.3)] bg-gradient-to-br from-[rgba(108,99,255,0.2)] to-[rgba(0,212,170,0.1)]">
                 {step.icon}
               </div>
 
-              <div style={{
-                display: "inline-flex",
-                background: "rgba(108,99,255,0.15)",
-                color: "var(--accent-light)",
-                borderRadius: "6px",
-                padding: "3px 10px",
-                fontSize: "12px",
-                fontWeight: 700,
-                marginBottom: "12px",
-                letterSpacing: "0.05em",
-              }}>
+              {/* Step badge */}
+              <div className="inline-flex bg-[rgba(108,99,255,0.15)] text-[var(--accent-light)] rounded-md px-2.5 py-1 text-xs font-bold tracking-wide mb-3">
                 STEP {step.num}
               </div>
 
-              <h3 style={{ fontSize: "18px", fontWeight: 700, color: "var(--text-primary)", marginBottom: "10px" }}>
+              {/* Title */}
+              <h3 className="text-base sm:text-lg font-bold text-[var(--text-primary)] mb-2">
                 {step.title}
               </h3>
-              <p style={{ color: "var(--text-secondary)", fontSize: "14px", lineHeight: 1.7 }}>
+
+              {/* Description */}
+              <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
                 {step.desc}
               </p>
             </div>

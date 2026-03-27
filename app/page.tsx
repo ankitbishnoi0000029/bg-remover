@@ -36,7 +36,7 @@ export default function Home() {
   return (
     <>
       <Navbar />
-      <main>
+      <main className="w-full min-h-screen overflow-x-hidden">
         <Hero />
         <Features />
         <HowItWorks />

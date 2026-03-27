@@ -1,7 +1,9 @@
 "use client";
 
+import classNames from "classnames";
 import dynamic from "next/dynamic";
 const BgRemover = dynamic(() => import("./BgRemover"), { ssr: false });
+
 const stats = [
   { value: "100%", label: "Free Forever" },
   { value: "0", label: "Uploads" },
@@ -10,76 +12,40 @@ const stats = [
 
 export default function Hero() {
   return (
-    <section
-      style={{
-        minHeight: "100vh",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: "120px 24px 80px",
-        position: "relative",
-        zIndex: 1,
-      }}
-    >
+    <section className="relative z-10 flex flex-col items-center justify-center min-h-screen px-4 sm:px-6 md:px-8 pt-28 pb-20">
       {/* Decorative rings */}
-      <div style={{ position: "absolute", top: "15%", left: "5%", width: "300px", height: "300px", borderRadius: "50%", border: "1px solid rgba(108,99,255,0.08)", pointerEvents: "none" }} />
-      <div style={{ position: "absolute", top: "20%", left: "5%", width: "200px", height: "200px", borderRadius: "50%", border: "1px solid rgba(108,99,255,0.05)", pointerEvents: "none" }} />
-      <div style={{ position: "absolute", bottom: "20%", right: "5%", width: "250px", height: "250px", borderRadius: "50%", border: "1px solid rgba(0,212,170,0.07)", pointerEvents: "none" }} />
+      <div className="absolute top-[15%] left-[5%] w-[300px] h-[300px] rounded-full border border-[rgba(108,99,255,0.08)] pointer-events-none hidden md:block" />
+      <div className="absolute top-[20%] left-[5%] w-[200px] h-[200px] rounded-full border border-[rgba(108,99,255,0.05)] pointer-events-none hidden md:block" />
+      <div className="absolute bottom-[20%] right-[5%] w-[250px] h-[250px] rounded-full border border-[rgba(0,212,170,0.07)] pointer-events-none hidden md:block" />
 
       {/* Headline block */}
-      <div style={{ maxWidth: "860px", width: "100%", textAlign: "center", marginBottom: "60px" }}>
-        <div className="badge fade-in-up" style={{ marginBottom: "24px", display: "inline-flex" }}>
-          <span style={{ color: "var(--teal)" }}>●</span>
+      <div className="w-full max-w-[860px] text-center mb-14">
+        <div className="badge fade-in-up inline-flex mb-6">
+          <span className="text-[var(--teal)]">●</span>
           <span>Free · Private · No Signup Required</span>
         </div>
 
-        <h1
-          className="fade-in-up fade-in-up-delay-1"
-          style={{
-            fontFamily: "'Space Grotesk', sans-serif",
-            fontSize: "clamp(36px, 7vw, 72px)",
-            fontWeight: 700,
-            lineHeight: 1.1,
-            marginBottom: "24px",
-            letterSpacing: "-0.02em",
-          }}
-        >
+        <h1 className="fade-in-up fade-in-up-delay-1 font-[Space_Grotesk] text-[clamp(36px,7vw,72px)] font-bold leading-[1.1] tracking-[-0.02em] mb-6">
           Remove backgrounds
           <br />
           <span className="shimmer-text">with one click</span>
         </h1>
 
-        <p
-          className="fade-in-up fade-in-up-delay-2"
-          style={{
-            fontSize: "clamp(16px, 2.5vw, 20px)",
-            color: "var(--text-secondary)",
-            maxWidth: "600px",
-            margin: "0 auto 40px",
-            lineHeight: 1.7,
-          }}
-        >
-          AI-powered background removal that runs entirely in your browser.
-          No uploads. No accounts. No waiting. Just instant, pixel-perfect results.
+        <p className="fade-in-up fade-in-up-delay-2 text-[clamp(16px,2.5vw,20px)] text-[var(--text-secondary)] max-w-[600px] mx-auto mb-10 leading-[1.7]">
+          AI-powered background removal that runs entirely in your browser. No
+          uploads. No accounts. No waiting. Just instant, pixel-perfect results.
         </p>
 
         {/* Stats */}
-        <div
-          className="fade-in-up fade-in-up-delay-3"
-          style={{ display: "flex", justifyContent: "center", gap: "48px", marginBottom: "48px", flexWrap: "wrap" }}
-        >
+        <div className="fade-in-up fade-in-up-delay-3 flex flex-wrap justify-center gap-10 sm:gap-12 mb-12">
           {stats.map(({ value, label }) => (
-            <div key={label} style={{ textAlign: "center" }}>
-              <div style={{
-                fontFamily: "'Space Grotesk', sans-serif",
-                fontSize: "32px",
-                fontWeight: 700,
-                color: "var(--accent-light)",
-                lineHeight: 1,
-                marginBottom: "4px",
-              }}>{value}</div>
-              <div style={{ color: "var(--text-secondary)", fontSize: "13px" }}>{label}</div>
+            <div key={label} className="text-center">
+              <div className="font-[Space_Grotesk] text-[32px] font-bold text-[var(--accent-light)] leading-none mb-1">
+                {value}
+              </div>
+              <div className="text-[13px] text-[var(--text-secondary)]">
+                {label}
+              </div>
             </div>
           ))}
         </div>
@@ -88,52 +54,32 @@ export default function Hero() {
       {/* Tool card */}
       <div
         id="upload"
-        className="glass-card fade-in-up fade-in-up-delay-4"
-        style={{ width: "100%", maxWidth: "800px", padding: "32px" }}
+        className={classNames(
+          "w-full max-w-[800px] p-6 m-2",
+          "glass-card",
+          "fade-in-up",
+          "fade-in-up-delay-4",
+        )}
       >
         {/* Card header */}
-        <div style={{
-          display: "flex",
-          alignItems: "center",
-          gap: "12px",
-          marginBottom: "24px",
-          paddingBottom: "20px",
-          borderBottom: "1px solid var(--border)",
-          flexWrap: "wrap",
-        }}>
-          <div style={{
-            width: "42px", height: "42px",
-            background: "linear-gradient(135deg, #6c63ff, #00d4aa)",
-            borderRadius: "12px",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            fontSize: "20px",
-            flexShrink: 0,
-          }}>✂</div>
+        <div className="flex flex-wrap items-center gap-3 mb-6 pb-5 border-b border-[var(--border)]">
+          <div className="w-[42px] h-[42px] rounded-xl flex items-center justify-center text-lg flex-shrink-0 bg-gradient-to-br from-[#6c63ff] to-[#00d4aa]">
+            ✂
+          </div>
+
           <div>
-            <h2 style={{ fontSize: "16px", fontWeight: 700, color: "var(--text-primary)", marginBottom: "2px" }}>
+            <h2 className="text-sm font-bold text-[var(--text-primary)] mb-0.5">
               AI Background Remover
             </h2>
-            <p style={{ fontSize: "12px", color: "var(--text-secondary)" }}>
-              Powered by @imgly/background-removal · Runs locally in your browser
+            <p className="text-xs text-[var(--text-secondary)]">
+              Powered by @imgly/background-removal · Runs locally in your
+              browser
             </p>
           </div>
-          <div style={{ marginLeft: "auto" }}>
-            <div style={{
-              display: "flex", alignItems: "center", gap: "6px",
-              background: "rgba(0,212,170,0.1)",
-              border: "1px solid rgba(0,212,170,0.3)",
-              borderRadius: "20px",
-              padding: "4px 12px",
-              fontSize: "12px",
-              color: "var(--teal)",
-            }}>
-              <span style={{
-                width: "6px", height: "6px",
-                background: "var(--teal)",
-                borderRadius: "50%",
-                display: "inline-block",
-                animation: "pulse-glow 2s ease-in-out infinite",
-              }} />
+
+          <div className="ml-auto">
+            <div className="flex items-center gap-1.5 px-3 py-1 text-xs rounded-full border border-[rgba(0,212,170,0.3)] bg-[rgba(0,212,170,0.1)] text-[var(--teal)]">
+              <span className="w-[6px] h-[6px] bg-[var(--teal)] rounded-full animate-pulse" />
               Ready
             </div>
           </div>

@@ -1,4 +1,5 @@
 "use client";
+
 export default function Features() {
   const features = [
     {
@@ -40,50 +41,51 @@ export default function Features() {
   ];
 
   return (
-    <section id="features" style={{ padding: "100px 24px", position: "relative", zIndex: 1 }}>
-      <div style={{ maxWidth: "1100px", margin: "0 auto" }}>
-        {/* Section header */}
-        <div style={{ textAlign: "center", marginBottom: "64px" }}>
-          <div className="badge" style={{ marginBottom: "16px" }}>
+    <section
+      id="features"
+      className="relative z-10 px-4 sm:px-6 md:px-8 py-24"
+    >
+      <div className="w-full max-w-[1100px] mx-auto">
+
+        {/* Header */}
+        <div className="text-center mb-16">
+          <div className="badge mb-4 inline-flex">
             <span>⚡</span> Why BgEraser?
           </div>
-          <h2 style={{
-            fontFamily: "'Space Grotesk', sans-serif",
-            fontSize: "clamp(28px, 5vw, 44px)",
-            fontWeight: 700,
-            color: "var(--text-primary)",
-            marginBottom: "16px",
-          }}>
+
+          <h2 className="font-[Space_Grotesk] text-[clamp(28px,5vw,44px)] font-bold text-[var(--text-primary)] mb-4">
             Everything you need,<br />
             <span className="shimmer-text">nothing you don&apos;t</span>
           </h2>
-          <p style={{ color: "var(--text-secondary)", fontSize: "17px", maxWidth: "500px", margin: "0 auto" }}>
+
+          <p className="text-[var(--text-secondary)] text-base sm:text-lg max-w-[500px] mx-auto">
             Professional-grade background removal that respects your privacy and works offline.
           </p>
         </div>
 
-        {/* Features grid */}
-        <div style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
-          gap: "20px",
-        }}>
+        {/* Grid */}
+        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {features.map((f, i) => (
             <div
               key={i}
-              className="feature-card fade-in-up"
+              className="feature-card fade-in-up p-6 sm:p-7 rounded-2xl transition-all duration-300"
               style={{ animationDelay: `${i * 0.1}s` }}
             >
+              {/* Icon */}
               <div
-                className="feature-icon"
-                style={{ background: f.gradient, border: "1px solid rgba(255,255,255,0.08)" }}
+                className="feature-icon w-12 h-12 sm:w-14 sm:h-14 rounded-xl flex items-center justify-center text-xl sm:text-2xl mb-4 border border-white/10"
+                style={{ background: f.gradient }}
               >
                 {f.icon}
               </div>
-              <h3 style={{ fontSize: "17px", fontWeight: 700, color: "var(--text-primary)", marginBottom: "8px" }}>
+
+              {/* Title */}
+              <h3 className="text-base sm:text-lg font-bold text-[var(--text-primary)] mb-2">
                 {f.title}
               </h3>
-              <p style={{ color: "var(--text-secondary)", fontSize: "14px", lineHeight: 1.7 }}>
+
+              {/* Description */}
+              <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
                 {f.desc}
               </p>
             </div>

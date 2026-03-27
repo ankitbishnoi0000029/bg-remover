@@ -1,4 +1,5 @@
 "use client";
+
 import { useState, useEffect } from "react";
 
 export default function Navbar() {
@@ -12,78 +13,26 @@ export default function Navbar() {
 
   return (
     <nav
-      style={{
-        position: "fixed",
-        top: 0,
-        left: 0,
-        right: 0,
-        zIndex: 50,
-        padding: "16px 24px",
-        transition: "all 0.3s ease",
-        background: scrolled
-          ? "rgba(10, 10, 15, 0.95)"
-          : "transparent",
-        backdropFilter: scrolled ? "blur(20px)" : "none",
-        borderBottom: scrolled ? "1px solid rgba(108,99,255,0.15)" : "1px solid transparent",
-      }}
+      className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 px-4 sm:px-6 md:px-8 py-4
+      ${
+        scrolled
+          ? "bg-[rgba(10,10,15,0.95)] backdrop-blur-xl border-b border-[rgba(108,99,255,0.15)]"
+          : "bg-transparent border-b border-transparent"
+      }`}
     >
-      <div style={{ maxWidth: "1200px", margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+      <div className="w-full max-w-[1200px] mx-auto flex items-center justify-between">
+
         {/* Logo */}
-        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-          <div style={{
-            width: "36px", height: "36px",
-            background: "linear-gradient(135deg, #6c63ff, #00d4aa)",
-            borderRadius: "10px",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            fontSize: "18px",
-          }}>✂</div>
-          <span style={{
-            fontFamily: "'Space Grotesk', sans-serif",
-            fontSize: "20px",
-            fontWeight: 700,
-            color: "#f0f0ff",
-          }}>
-            Bg<span style={{ color: "#6c63ff" }}>Eraser</span>
+        <div className="flex items-center gap-2.5">
+          <div className="w-9 h-9 rounded-lg flex items-center justify-center text-lg bg-gradient-to-br from-[#6c63ff] to-[#00d4aa]">
+            ✂
+          </div>
+
+          <span className="font-[Space_Grotesk] text-lg sm:text-xl font-bold text-[#f0f0ff]">
+            Bg<span className="text-[#6c63ff]">Eraser</span>
           </span>
         </div>
 
-        {/* Nav links */}
-        <div style={{ display: "flex", alignItems: "center", gap: "32px" }}>
-          {["Features", "How it Works", "FAQ"].map((item) => (
-            <a
-              key={item}
-              href={`#${item.toLowerCase().replace(/ /g, "-")}`}
-              style={{
-                color: "#9090b0",
-                textDecoration: "none",
-                fontSize: "14px",
-                fontWeight: 500,
-                transition: "color 0.2s",
-              }}
-              onMouseEnter={(e) => (e.currentTarget.style.color = "#f0f0ff")}
-              onMouseLeave={(e) => (e.currentTarget.style.color = "#9090b0")}
-            >
-              {item}
-            </a>
-          ))}
-          <a
-            href="#upload"
-            style={{
-              background: "linear-gradient(135deg, #6c63ff, #8b84ff)",
-              color: "white",
-              textDecoration: "none",
-              padding: "8px 20px",
-              borderRadius: "10px",
-              fontSize: "14px",
-              fontWeight: 600,
-              transition: "all 0.2s",
-            }}
-            onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.transform = "translateY(-1px)"; (e.currentTarget as HTMLElement).style.boxShadow = "0 6px 20px rgba(108,99,255,0.4)"; }}
-            onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.transform = "none"; (e.currentTarget as HTMLElement).style.boxShadow = "none"; }}
-          >
-            Try Free
-          </a>
-        </div>
       </div>
     </nav>
   );

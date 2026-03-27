@@ -199,7 +199,7 @@ const publicPath = `${window.location.origin}/imgly-assets/`;
           }} />
 
           <div style={{
-            width: "80px", height: "80px",
+            // width: "80px", height: "80px",
             background: "linear-gradient(135deg, rgba(108,99,255,0.2), rgba(0,212,170,0.1))",
             border: "2px solid rgba(108,99,255,0.3)",
             borderRadius: "24px",
@@ -210,7 +210,7 @@ const publicPath = `${window.location.origin}/imgly-assets/`;
             🖼️
           </div>
 
-          <h2 style={{ fontSize: "22px", fontWeight: 700, color: "var(--text-primary)", marginBottom: "8px" }}>
+          <h2 className="drop" style={{ fontSize: "22px", fontWeight: 700, color: "var(--text-primary)", marginBottom: "8px" }}>
             Drop your image here
           </h2>
           <p style={{ color: "var(--text-secondary)", fontSize: "15px", marginBottom: "24px" }}>
@@ -218,7 +218,7 @@ const publicPath = `${window.location.origin}/imgly-assets/`;
           </p>
 
           <button
-            className="btn-primary"
+            className="btn-primary button-img"
             onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }}
           >
             <span>📂 Choose Image</span>
