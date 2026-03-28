@@ -55,19 +55,24 @@ export default function Hero() {
       <div
         id="upload"
         className={classNames(
-          "w-full max-w-[800px] p-6 m-2",
+          "w-full max-w-[800px]",
           "glass-card",
           "fade-in-up",
           "fade-in-up-delay-4",
         )}
       >
         {/* Card header */}
-        <div className="flex flex-wrap items-center gap-3 mb-6 pb-5 border-b border-[var(--border)]">
+        <div className="flex flex-wrap items-center gap-3 mb-6 pb-5 border-b border-[var(--border)] p-4">
           <div className="w-[42px] h-[42px] rounded-xl flex items-center justify-center text-lg flex-shrink-0 bg-gradient-to-br from-[#6c63ff] to-[#00d4aa]">
             ✂
           </div>
-
-          <div>
+<div className="ml-auto">
+            <div className="flex items-center gap-1.5 px-3 py-1 text-xs rounded-full border border-[rgba(0,212,170,0.3)] bg-[rgba(0,212,170,0.1)] text-[var(--teal)]">
+              <span className="w-[6px] h-[6px] bg-[var(--teal)] rounded-full animate-pulse" />
+              Ready
+            </div>
+          </div>
+          <div >
             <h2 className="text-sm font-bold text-[var(--text-primary)] mb-0.5">
               AI Background Remover
             </h2>
@@ -77,12 +82,7 @@ export default function Hero() {
             </p>
           </div>
 
-          <div className="ml-auto">
-            <div className="flex items-center gap-1.5 px-3 py-1 text-xs rounded-full border border-[rgba(0,212,170,0.3)] bg-[rgba(0,212,170,0.1)] text-[var(--teal)]">
-              <span className="w-[6px] h-[6px] bg-[var(--teal)] rounded-full animate-pulse" />
-              Ready
-            </div>
-          </div>
+          
         </div>
 
         <BgRemover />

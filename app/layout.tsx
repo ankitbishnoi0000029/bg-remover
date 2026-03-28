@@ -49,7 +49,7 @@ export default function RootLayout({
         />
         <link rel="icon" href="/favicon.ico" />
       </head>
-      <body className="px-4">{children}</body>
+      <body >{children}</body>
     </html>
   );
 }

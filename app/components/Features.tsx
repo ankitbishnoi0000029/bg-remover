@@ -43,7 +43,7 @@ export default function Features() {
   return (
     <section
       id="features"
-      className="relative z-10 px-4 sm:px-6 md:px-8 py-24"
+      className="relative z-10 px-4 sm:px-6 md:px-8 py-4"
     >
       <div className="w-full max-w-[1100px] mx-auto">
 

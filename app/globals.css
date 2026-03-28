@@ -331,7 +331,7 @@ body {
 }
 
 /* Example: Stack elements vertically on screens smaller than 600px */
-@media screen and (max-width: 320px) {
+/* @media screen and (max-width: 450px) {
   .drop-zone {
     padding: 10px !important;
   }
@@ -341,4 +341,4 @@ body {
   .drop{
     font-size: 16px !important;
   }
-}
+} */
