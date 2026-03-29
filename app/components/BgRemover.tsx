@@ -1,53 +1,39 @@
 "use client";
 
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useState, useCallback, useRef } from "react";
 
 type ProcessingState = "idle" | "loading" | "processing" | "done" | "error";
-
-interface ProcessingLog {
-  message: string;
-  type: "info" | "success" | "error";
-}
 
 export default function BgRemover() {
   const [state, setState] = useState<ProcessingState>("idle");
   const [progress, setProgress] = useState(0);
   const [originalUrl, setOriginalUrl] = useState<string | null>(null);
   const [resultUrl, setResultUrl] = useState<string | null>(null);
-  const [fileName, setFileName] = useState<string>("");
-  const [sliderPos, setSliderPos] = useState(50);
-  const [dragging, setDragging] = useState(false);
-  const [dragOver, setDragOver] = useState(false);
-  const [logs, setLogs] = useState<ProcessingLog[]>([]);
-  const [originalSize, setOriginalSize] = useState<{ w: number; h: number } | null>(null);
+  const [fileName, setFileName] = useState("");
   const [view, setView] = useState<"compare" | "result" | "original">("compare");
 
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const comparisonRef = useRef<HTMLDivElement>(null);
-  const processingRef = useRef(false);
+  // NEW FEATURES
+  const [hdEnabled, setHdEnabled] = useState(false);
+  const [blurToHd, setBlurToHd] = useState(false);
+  const [bgColor, setBgColor] = useState("#ffffff");
 
-  const addLog = (message: string, type: ProcessingLog["type"] = "info") => {
-    setLogs((prev) => [...prev, { message, type }]);
-  };
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const processingRef = useRef(false);
 
   const processFile = useCallback(async (file: File) => {
     if (processingRef.current) return;
+
     if (!file.type.startsWith("image/")) {
-      addLog("Please upload a valid image file", "error");
+      alert("Please upload image");
       return;
     }
 
     processingRef.current = true;
-    setLogs([]);
     setState("loading");
     setFileName(file.name);
 
     const originalObjectUrl = URL.createObjectURL(file);
     setOriginalUrl(originalObjectUrl);
-
-    const img = new Image();
-    img.onload = () => setOriginalSize({ w: img.naturalWidth, h: img.naturalHeight });
-    img.src = originalObjectUrl;
 
     try {
       setState("processing");
@@ -63,22 +49,83 @@ export default function BgRemover() {
         },
       });
 
-      const resultObjectUrl = URL.createObjectURL(blob);
+      let processedBlob = blob;
+
+      // ✅ Blur + HD enhancement (canvas based)
+      if (hdEnabled || blurToHd) {
+        processedBlob = await enhanceImage(blob, blurToHd);
+      }
+
+      const resultObjectUrl = URL.createObjectURL(processedBlob);
       setResultUrl(resultObjectUrl);
       setState("done");
     } catch (err) {
+      console.error(err);
       setState("error");
     } finally {
       processingRef.current = false;
     }
-  }, []);
+  }, [hdEnabled, blurToHd]);
 
-  const handleDownload = () => {
+  // 🧠 Image Enhancement Function
+  const enhanceImage = (blob: Blob, applyBlur: boolean): Promise<Blob> => {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.src = URL.createObjectURL(blob);
+
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d")!;
+
+        // upscale for HD
+        const scale = 1.5;
+        canvas.width = img.width * scale;
+        canvas.height = img.height * scale;
+
+        if (applyBlur) {
+          ctx.filter = "blur(1px) contrast(110%)";
+        }
+
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+        canvas.toBlob((b) => resolve(b!), "image/png");
+      };
+    });
+  };
+
+  // 🎨 Apply Background Color
+  const renderWithBackground = (src: string) => {
+    return (
+      <div
+        className="flex justify-center items-center rounded-xl p-2"
+        style={{ background: bgColor }}
+      >
+        <img src={src} className="max-h-[300px] object-contain" />
+      </div>
+    );
+  };
+
+  const handleDownload = async () => {
     if (!resultUrl) return;
-    const a = document.createElement("a");
-    a.href = resultUrl;
-    a.download = `bgeraser_${fileName}.png`;
-    a.click();
+
+    const img = new Image();
+    img.src = resultUrl;
+
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = img.width;
+      canvas.height = img.height;
+
+      const ctx = canvas.getContext("2d")!;
+      ctx.fillStyle = bgColor;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, 0, 0);
+
+      const link = document.createElement("a");
+      link.download = `hd_${fileName}`;
+      link.href = canvas.toDataURL("image/png");
+      link.click();
+    };
   };
 
   const handleReset = () => {
@@ -88,36 +135,20 @@ export default function BgRemover() {
     setProgress(0);
   };
 
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    setDragOver(false);
-    const file = e.dataTransfer.files?.[0];
-    if (file) processFile(file);
-  };
-
   const isProcessing = state === "loading" || state === "processing";
 
   return (
-    <div className="relative z-10 w-full max-w-4xl mx-auto">
+    <div className="w-full max-w-4xl mx-auto px-3 sm:px-0">
 
       {/* Upload */}
       {state === "idle" && (
         <div
-          className={`border-2 border-dashed rounded-2xl text-center cursor-pointer transition py-4 ${
-            dragOver ? "border-purple-500 bg-purple-500/10" : "border-gray-600"
-          }`}
+          className="border-2 border-dashed border-gray-600 rounded-2xl text-center py-8 cursor-pointer hover:border-purple-500 transition"
           onClick={() => fileInputRef.current?.click()}
-          onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
-          onDragLeave={() => setDragOver(false)}
-          onDrop={handleDrop}
         >
-          <div className="text-5xl mb-6">🖼️</div>
-          <h2 className="text-xl font-bold mb-2">Drop your image here</h2>
-          <p className="text-gray-400 mb-6">PNG, JPG, WebP up to 20MB</p>
-
-          <button className="px-6 py-3 rounded-xl bg-purple-600 hover:bg-purple-700 transition">
-            Choose Image
-          </button>
+          <div className="text-4xl mb-3">🖼️</div>
+          <p className="text-lg font-semibold">Upload Image</p>
+          <p className="text-sm text-gray-400">PNG, JPG, WebP</p>
 
           <input
             ref={fileInputRef}
@@ -134,31 +165,54 @@ export default function BgRemover() {
 
       {/* Processing */}
       {isProcessing && (
-        <div className="bg-gray-900 rounded-2xl p-10 text-center">
-          <div className="animate-spin w-12 h-12 border-4 border-purple-500 border-t-transparent rounded-full mx-auto mb-6" />
-          <h3 className="text-lg font-bold mb-2">Processing Image...</h3>
-
-          <div className="w-full bg-gray-700 rounded-full h-2 mb-2">
-            <div
-              className="bg-purple-500 h-2 rounded-full"
-              style={{ width: `${progress}%` }}
-            />
-          </div>
-
-          <p className="text-sm text-gray-400">{progress}%</p>
+        <div className="bg-gray-900 rounded-xl p-6 text-center mt-4">
+          <div className="animate-spin w-10 h-10 border-4 border-purple-500 border-t-transparent rounded-full mx-auto mb-4" />
+          <p>{progress}% Processing...</p>
         </div>
       )}
 
       {/* Result */}
-      {state === "done" && originalUrl && resultUrl && (
-        <div>
-          {/* Toggle */}
-          <div className="flex gap-2 justify-center mb-4">
+      {state === "done" && resultUrl && originalUrl && (
+        <div className="mt-4">
+
+          {/* Controls */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-4">
+
+            <label className="flex items-center gap-2 bg-gray-800 p-2 rounded-lg text-sm">
+              <input
+                type="checkbox"
+                checked={hdEnabled}
+                onChange={(e) => setHdEnabled(e.target.checked)}
+              />
+              HD Enhance
+            </label>
+
+            <label className="flex items-center gap-2 bg-gray-800 p-2 rounded-lg text-sm">
+              <input
+                type="checkbox"
+                checked={blurToHd}
+                onChange={(e) => setBlurToHd(e.target.checked)}
+              />
+              Blur → HD
+            </label>
+
+            <div className="flex items-center gap-2 bg-gray-800 p-2 rounded-lg text-sm">
+              🎨
+              <input
+                type="color"
+                value={bgColor}
+                onChange={(e) => setBgColor(e.target.value)}
+              />
+            </div>
+          </div>
+
+          {/* View Toggle */}
+          <div className="flex justify-center gap-2 mb-3 flex-wrap">
             {["compare", "original", "result"].map((v) => (
               <button
                 key={v}
                 onClick={() => setView(v as any)}
-                className={`px-4 py-2 rounded-full text-sm ${
+                className={`px-3 py-1 rounded-full text-sm ${
                   view === v
                     ? "bg-purple-600 text-white"
                     : "bg-gray-800 text-gray-400"
@@ -170,49 +224,30 @@ export default function BgRemover() {
           </div>
 
           {/* Images */}
-          <div className="bg-gray-900 rounded-xl p-4 mb-4">
-            {view === "original" && (
-              <img src={originalUrl} className="mx-auto max-h-[400px]" />
-            )}
-
-            {view === "result" && (
-              <img src={resultUrl} className="mx-auto max-h-[400px]" />
-            )}
+          <div className="bg-gray-900 rounded-xl p-3">
+            {view === "original" && renderWithBackground(originalUrl)}
+            {view === "result" && renderWithBackground(resultUrl)}
 
             {view === "compare" && (
-              <div className="grid md:grid-cols-2 gap-4">
-                <img src={originalUrl} />
-                <img src={resultUrl} />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {renderWithBackground(originalUrl)}
+                {renderWithBackground(resultUrl)}
               </div>
             )}
           </div>
 
-          {/* Info */}
-          {originalSize && (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
-              <div className="bg-gray-800 p-3 rounded-lg">
-                <p className="text-xs text-gray-400">File</p>
-                <p className="text-sm">{fileName}</p>
-              </div>
-              <div className="bg-gray-800 p-3 rounded-lg">
-                <p className="text-xs text-gray-400">Size</p>
-                <p className="text-sm">{originalSize.w}x{originalSize.h}</p>
-              </div>
-            </div>
-          )}
-
           {/* Buttons */}
-          <div className="flex gap-3">
+          <div className="flex flex-col sm:flex-row gap-2 mt-4">
             <button
               onClick={handleDownload}
-              className="flex-1 bg-purple-600 py-3 rounded-xl"
+              className="flex-1 bg-purple-600 py-2 rounded-lg"
             >
-              Download
+              Download HD
             </button>
 
             <button
               onClick={handleReset}
-              className="flex-1 border border-gray-600 py-3 rounded-xl"
+              className="flex-1 border border-gray-600 py-2 rounded-lg"
             >
               New Image
             </button>
@@ -222,13 +257,13 @@ export default function BgRemover() {
 
       {/* Error */}
       {state === "error" && (
-        <div className="text-center p-10 bg-red-900/20 rounded-xl">
-          <h3 className="text-red-400 font-bold mb-4">Error</h3>
+        <div className="text-center p-6 bg-red-900/20 rounded-xl mt-4">
+          <p className="text-red-400">Something went wrong</p>
           <button
             onClick={handleReset}
-            className="bg-purple-600 px-6 py-3 rounded-xl"
+            className="mt-3 bg-purple-600 px-4 py-2 rounded"
           >
-            Try Again
+            Retry
           </button>
         </div>
       )}
