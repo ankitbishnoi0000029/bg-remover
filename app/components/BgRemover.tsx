@@ -7,33 +7,23 @@ type ProcessingState = "idle" | "loading" | "processing" | "done" | "error";
 export default function BgRemover() {
   const [state, setState] = useState<ProcessingState>("idle");
   const [progress, setProgress] = useState(0);
-  const [originalUrl, setOriginalUrl] = useState<string | null>(null);
-  const [resultUrl, setResultUrl] = useState<string | null>(null);
-  const [fileName, setFileName] = useState("");
-  const [view, setView] = useState<"compare" | "result" | "original">("compare");
 
-  // NEW FEATURES
-  const [hdEnabled, setHdEnabled] = useState(false);
-  const [blurToHd, setBlurToHd] = useState(false);
+  const [blurUrl, setBlurUrl] = useState<string | null>(null);
+  const [hdUrl, setHdUrl] = useState<string | null>(null);
+
+  const [fileName, setFileName] = useState("");
   const [bgColor, setBgColor] = useState("#ffffff");
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const processingRef = useRef(false);
 
+  // PROCESS
   const processFile = useCallback(async (file: File) => {
     if (processingRef.current) return;
-
-    if (!file.type.startsWith("image/")) {
-      alert("Please upload image");
-      return;
-    }
 
     processingRef.current = true;
     setState("loading");
     setFileName(file.name);
-
-    const originalObjectUrl = URL.createObjectURL(file);
-    setOriginalUrl(originalObjectUrl);
 
     try {
       setState("processing");
@@ -49,15 +39,12 @@ export default function BgRemover() {
         },
       });
 
-      let processedBlob = blob;
+      const blurBlob = await processCanvas(blob, "blur");
+      const hdBlob = await processCanvas(blob, "hd");
 
-      // ✅ Blur + HD enhancement (canvas based)
-      if (hdEnabled || blurToHd) {
-        processedBlob = await enhanceImage(blob, blurToHd);
-      }
+      setBlurUrl(URL.createObjectURL(blurBlob));
+      setHdUrl(URL.createObjectURL(hdBlob));
 
-      const resultObjectUrl = URL.createObjectURL(processedBlob);
-      setResultUrl(resultObjectUrl);
       setState("done");
     } catch (err) {
       console.error(err);
@@ -65,10 +52,10 @@ export default function BgRemover() {
     } finally {
       processingRef.current = false;
     }
-  }, [hdEnabled, blurToHd]);
+  }, []);
 
-  // 🧠 Image Enhancement Function
-  const enhanceImage = (blob: Blob, applyBlur: boolean): Promise<Blob> => {
+  // CANVAS PROCESS
+  const processCanvas = (blob: Blob, type: "blur" | "hd"): Promise<Blob> => {
     return new Promise((resolve) => {
       const img = new Image();
       img.src = URL.createObjectURL(blob);
@@ -77,14 +64,13 @@ export default function BgRemover() {
         const canvas = document.createElement("canvas");
         const ctx = canvas.getContext("2d")!;
 
-        // upscale for HD
-        const scale = 1.5;
+        let scale = 1;
+
+        if (type === "hd") scale = 1.6;
+        if (type === "blur") ctx.filter = "blur(2px)";
+
         canvas.width = img.width * scale;
         canvas.height = img.height * scale;
-
-        if (applyBlur) {
-          ctx.filter = "blur(1px) contrast(110%)";
-        }
 
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
@@ -93,23 +79,10 @@ export default function BgRemover() {
     });
   };
 
-  // 🎨 Apply Background Color
-  const renderWithBackground = (src: string) => {
-    return (
-      <div
-        className="flex justify-center items-center rounded-xl p-2"
-        style={{ background: bgColor }}
-      >
-        <img src={src} className="max-h-[300px] object-contain" />
-      </div>
-    );
-  };
-
-  const handleDownload = async () => {
-    if (!resultUrl) return;
-
+  // DOWNLOAD
+  const downloadImage = (src: string, name: string) => {
     const img = new Image();
-    img.src = resultUrl;
+    img.src = src;
 
     img.onload = () => {
       const canvas = document.createElement("canvas");
@@ -122,7 +95,7 @@ export default function BgRemover() {
       ctx.drawImage(img, 0, 0);
 
       const link = document.createElement("a");
-      link.download = `hd_${fileName}`;
+      link.download = name;
       link.href = canvas.toDataURL("image/png");
       link.click();
     };
@@ -130,141 +103,158 @@ export default function BgRemover() {
 
   const handleReset = () => {
     setState("idle");
-    setOriginalUrl(null);
-    setResultUrl(null);
+    setBlurUrl(null);
+    setHdUrl(null);
     setProgress(0);
   };
 
   const isProcessing = state === "loading" || state === "processing";
 
   return (
-    <div className="w-full max-w-4xl mx-auto px-3 sm:px-0">
+    <div className="max-w-5xl mx-auto px-3 py-6">
 
-      {/* Upload */}
+      {/* ================= UPLOAD UI ================= */}
       {state === "idle" && (
-        <div
-          className="border-2 border-dashed border-gray-600 rounded-2xl text-center py-8 cursor-pointer hover:border-purple-500 transition"
-          onClick={() => fileInputRef.current?.click()}
-        >
-          <div className="text-4xl mb-3">🖼️</div>
-          <p className="text-lg font-semibold">Upload Image</p>
-          <p className="text-sm text-gray-400">PNG, JPG, WebP</p>
-
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={(e) => {
-              const file = e.target.files?.[0];
+        <div className="w-full">
+          <div
+            onClick={() => fileInputRef.current?.click()}
+            onDragOver={(e) => {
+              e.preventDefault();
+              e.currentTarget.classList.add("border-purple-500", "bg-purple-500/10");
+            }}
+            onDragLeave={(e) => {
+              e.currentTarget.classList.remove("border-purple-500", "bg-purple-500/10");
+            }}
+            onDrop={(e) => {
+              e.preventDefault();
+              e.currentTarget.classList.remove("border-purple-500", "bg-purple-500/10");
+              const file = e.dataTransfer.files?.[0];
               if (file) processFile(file);
             }}
-          />
-        </div>
-      )}
+            className="relative group border-2 border-dashed border-gray-600 hover:border-purple-500 transition-all duration-300 rounded-2xl p-6 sm:p-12 text-center cursor-pointer bg-gradient-to-br from-gray-900 to-gray-800 shadow-xl"
+          >
+            {/* Glow */}
+            <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition bg-purple-500/10 blur-xl" />
 
-      {/* Processing */}
-      {isProcessing && (
-        <div className="bg-gray-900 rounded-xl p-6 text-center mt-4">
-          <div className="animate-spin w-10 h-10 border-4 border-purple-500 border-t-transparent rounded-full mx-auto mb-4" />
-          <p>{progress}% Processing...</p>
-        </div>
-      )}
+            {/* Icon */}
+            <div className="text-5xl mb-4 animate-bounce">📤</div>
 
-      {/* Result */}
-      {state === "done" && resultUrl && originalUrl && (
-        <div className="mt-4">
+            {/* Title */}
+            <h2 className="text-xl font-semibold mb-2">
+              Drag & Drop your image
+            </h2>
 
-          {/* Controls */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-4">
+            {/* Subtitle */}
+            <p className="text-gray-400 mb-5 text-sm">
+              or click to browse files
+            </p>
 
-            <label className="flex items-center gap-2 bg-gray-800 p-2 rounded-lg text-sm">
-              <input
-                type="checkbox"
-                checked={hdEnabled}
-                onChange={(e) => setHdEnabled(e.target.checked)}
-              />
-              HD Enhance
-            </label>
+            {/* Button */}
+            <button className="px-6 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 transition shadow-md text-sm">
+              Choose Image
+            </button>
 
-            <label className="flex items-center gap-2 bg-gray-800 p-2 rounded-lg text-sm">
-              <input
-                type="checkbox"
-                checked={blurToHd}
-                onChange={(e) => setBlurToHd(e.target.checked)}
-              />
-              Blur → HD
-            </label>
+            {/* Info */}
+            <p className="text-xs text-gray-500 mt-4">
+              PNG, JPG, WEBP • Max 20MB
+            </p>
 
-            <div className="flex items-center gap-2 bg-gray-800 p-2 rounded-lg text-sm">
-              🎨
-              <input
-                type="color"
-                value={bgColor}
-                onChange={(e) => setBgColor(e.target.value)}
-              />
-            </div>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) processFile(file);
+              }}
+            />
           </div>
 
-          {/* View Toggle */}
-          <div className="flex justify-center gap-2 mb-3 flex-wrap">
-            {["compare", "original", "result"].map((v) => (
-              <button
-                key={v}
-                onClick={() => setView(v as any)}
-                className={`px-3 py-1 rounded-full text-sm ${
-                  view === v
-                    ? "bg-purple-600 text-white"
-                    : "bg-gray-800 text-gray-400"
-                }`}
-              >
-                {v}
-              </button>
-            ))}
+          <p className="text-center text-xs text-gray-500 mt-3">
+            💡 Tip: Higher quality image gives better HD result
+          </p>
+        </div>
+      )}
+
+      {/* ================= PROCESSING ================= */}
+      {isProcessing && (
+        <div className="bg-gray-900 rounded-xl p-6 text-center">
+          <div className="animate-spin w-10 h-10 border-4 border-purple-500 border-t-transparent rounded-full mx-auto mb-4" />
+          <p className="text-sm">{progress}% Processing...</p>
+        </div>
+      )}
+
+      {/* ================= RESULT ================= */}
+      {state === "done" && blurUrl && hdUrl && (
+        <div className="space-y-5">
+
+          {/* BG Picker */}
+          <div className="flex items-center gap-3">
+            <span className="text-sm text-gray-400">Background:</span>
+            <input
+              type="color"
+              value={bgColor}
+              onChange={(e) => setBgColor(e.target.value)}
+            />
           </div>
 
           {/* Images */}
-          <div className="bg-gray-900 rounded-xl p-3">
-            {view === "original" && renderWithBackground(originalUrl)}
-            {view === "result" && renderWithBackground(resultUrl)}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
-            {view === "compare" && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {renderWithBackground(originalUrl)}
-                {renderWithBackground(resultUrl)}
+            {/* Blur */}
+            <div className="bg-gray-900 p-4 rounded-xl shadow">
+              <p className="text-yellow-400 text-sm mb-2">Blur Image</p>
+
+              <div style={{ background: bgColor }} className="p-2 rounded">
+                <img src={blurUrl} className="max-h-[300px] mx-auto" />
               </div>
-            )}
+
+              <button
+                onClick={() => downloadImage(blurUrl, `blur_${fileName}`)}
+                className="mt-3 w-full bg-yellow-500 py-2 rounded-lg"
+              >
+                Download Blur
+              </button>
+            </div>
+
+            {/* HD */}
+            <div className="bg-gray-900 p-4 rounded-xl shadow">
+              <p className="text-purple-400 text-sm mb-2">HD Image</p>
+
+              <div style={{ background: bgColor }} className="p-2 rounded">
+                <img src={hdUrl} className="max-h-[300px] mx-auto" />
+              </div>
+
+              <button
+                onClick={() => downloadImage(hdUrl, `hd_${fileName}`)}
+                className="mt-3 w-full bg-purple-600 py-2 rounded-lg"
+              >
+                Download HD
+              </button>
+            </div>
           </div>
 
-          {/* Buttons */}
-          <div className="flex flex-col sm:flex-row gap-2 mt-4">
-            <button
-              onClick={handleDownload}
-              className="flex-1 bg-purple-600 py-2 rounded-lg"
-            >
-              Download HD
-            </button>
-
-            <button
-              onClick={handleReset}
-              className="flex-1 border border-gray-600 py-2 rounded-lg"
-            >
-              New Image
-            </button>
+          {/* Info */}
+          <div className="bg-gray-900 p-4 rounded-xl text-center text-sm text-gray-400">
+            🔍 Blur = smooth image | HD = sharper + upscaled
           </div>
+
+          {/* Reset */}
+          <button
+            onClick={handleReset}
+            className="w-full border border-gray-600 py-2 rounded-lg"
+          >
+            Upload New Image
+          </button>
         </div>
       )}
 
-      {/* Error */}
+      {/* ERROR */}
       {state === "error" && (
-        <div className="text-center p-6 bg-red-900/20 rounded-xl mt-4">
-          <p className="text-red-400">Something went wrong</p>
-          <button
-            onClick={handleReset}
-            className="mt-3 bg-purple-600 px-4 py-2 rounded"
-          >
-            Retry
-          </button>
+        <div className="text-center text-red-400">
+          Error occurred
+          <button onClick={handleReset}>Retry</button>
         </div>
       )}
     </div>
